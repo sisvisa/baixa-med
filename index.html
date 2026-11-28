@@ -106,17 +106,6 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
  .pv{display:block;white-space:pre-wrap;overflow-wrap:anywhere}
  .c{white-space:normal}.c .pv{flex:1 1 0;min-width:0}
 }
-/* impressão compacta: cabem mais medicamentos por folha */
-@media print{
- .r{min-height:4.8mm}.t .c{font-size:10pt}.sec{font-size:10.5pt;padding:1px 4px}
- .intro-text{font-size:9.5pt;line-height:1.25;margin:3px 0 4px}
- th{font-size:8pt;height:auto;padding:1px 2px;line-height:1.15}
- td{height:5mm;padding:0 3px;font-size:9pt}
- td .pv,td .fo+.pv,td .lt+.pv{font-size:9pt;line-height:1.15}
- .foot{margin-top:2.5mm}.sg{padding:4px 8px}.sg .c{min-height:4.8mm;margin-bottom:0;font-size:10pt}.sg .c+.c{margin-top:0!important}
- .sig-box{margin-top:1mm}.sig{height:10mm}.cap{font-size:9pt;margin-bottom:0}
- .vs .l{margin-top:1.5mm;font-size:10pt}.vs .sec+.l{margin-top:2.5mm}.vs>div:last-child{margin-bottom:1mm!important}
-}
 /* tabela compacta na tela do computador (no celular os campos seguem grandes) */
 @media screen and (min-width:801px){
  th{font-size:9pt;height:auto;padding:2px;line-height:1.15}
@@ -125,6 +114,30 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
  td select.f{font-size:9pt}
  td.x{padding:1px}.rm{width:19px;height:19px;font-size:11px}
 }
+/* campos da tabela centralizados, menos o nome do medicamento */
+@media screen and (min-width:801px){td .f:not(.nm){text-align:center;text-align-last:center}}
+@media print{td .f:not(.nm)+.pv{text-align:center}}
+/* quadro do responsável técnico */
+.foot .sg{padding:0;justify-content:flex-start}
+.sg .rtbox{gap:0;margin:0;border-bottom:1px solid #000}
+.sg .rtf{padding:4px 8px 6px}
+.sg .rtf+.rtf{border-left:1px solid #000}
+.sg .rtf label{font-weight:700;color:#000;margin-bottom:3px}
+.sg .loc{padding:6px 8px 0}
+.sg .sig-box{margin-top:auto;padding:0 8px 6px}
+@media screen{.sg .rtf .f{border:1px solid #7a9c6a;border-radius:3px;padding:4px 6px}.sg .rtf .f:placeholder-shown{background:#fff8d6}}
+@media screen and (max-width:800px){.sg .rtf+.rtf{border-left:0;border-top:1px dotted #999}}
+@media print{.sg .rtf .pv{border:0}.sg .rtf{padding:2px 8px 3px}.sg .rtf label{margin-bottom:0}.sg .loc{padding-top:3px}.sg .sig{height:10mm}}
+#salvo{font:bold 12px Arial,sans-serif;color:#1b5e20;align-self:center;white-space:nowrap}
+#salvo.erro{color:#a33a3a;white-space:normal}
+#sug{position:absolute;z-index:20;background:#fff;border:1px solid #888;box-shadow:0 3px 8px rgba(0,0,0,.2);font:13px Arial,sans-serif;max-height:180px;overflow:auto}
+#sug div{padding:7px 10px;cursor:pointer}
+#sug div:hover,#sug div.sel{background:#dce8f8}
+@media print{#salvo,#sug{display:none!important}}
+/* letra da tabela em 10 pt na impressão */
+@media print{td,td .pv{font-size:10pt;line-height:1.15}}
+/* celular estreito: a linha "Recebido por" não alarga a página */
+@media screen and (max-width:800px){.vs,.vs>div{min-width:0}.vs .l{white-space:nowrap;overflow:hidden}}
 </style>
 </head>
 <body>
@@ -132,6 +145,7 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
  <button class="p" id="bPdf" type="button">Salvar / Gerar PDF</button>
  <button id="bNova" type="button">Nova relação</button>
  <button id="bLimpa" type="button">Limpar tudo</button>
+ <span id="salvo" role="status"></span>
 </div>
 <div class="note"><b>💾 O preenchimento é salvo automaticamente neste computador</b> (neste navegador) e continua aqui mesmo depois de fechar. Para uma nova lista de medicamentos, clique em “Nova relação”; para apagar tudo, em “Limpar tudo”. Só o CNPJ é consultado em base pública. Ao final, clique em “Salvar / Gerar PDF” e escolha “Salvar como PDF”. <b>Após assinar o documento, envie-o para o e-mail visa@cocaldosul.sc.gov.br</b></div>
 <div class="note" id="inapp" style="display:none;background:#fff3cd;border-color:#e6c75a;color:#664d03"><b>⚠️ Abra esta página no navegador.</b> Você está dentro de outro aplicativo (como o WhatsApp), que bloqueia PDF e download. No iPhone, escolha <b>“Abrir no Safari”</b>; no Android, <b>“Abrir no Chrome”</b>. <button type="button" id="bCopia" style="margin-top:6px;padding:8px 12px;border:1px solid #888;border-radius:6px;background:#fff;font:inherit;cursor:pointer">Copiar link</button></div>
@@ -160,7 +174,7 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
  </div>
 
  <div class="intro-text">
-  Venho, por meio desta, solicitar a baixa dos medicamentos sujeitos a controle especial relacionados abaixo, bem como o registro das respectivas justificativas. Em caso de extravio, anexar o Boletim de Ocorrência Policial.
+  Venho, por meio desta, solicitar a baixa dos medicamentos sujeitos a controle especial relacionados abaixo, bem como o registro das respectivas justificativas. Observação: em caso de extravio, anexar o Boletim de Ocorrência Policial.
  </div>
 
  <div class="sec" style="margin-top:6px">2 - RELAÇÃO DE MEDICAMENTOS</div>
@@ -181,13 +195,12 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
  <div class="rep2" id="rep2"></div>
  <div class="foot">
   <div class="sg">
-    <div>
-     <div class="c">LOCAL E DATA:<input class="f" id="local"></div>
-     <div class="rtbox">
-      <div class="rtf w"><label>RESPONSÁVEL TÉCNICO (nome completo)</label><textarea class="f" id="rt" rows="1" placeholder="Nome completo"></textarea></div>
-      <div class="rtf"><label>CONSELHO / Nº</label><input class="f" id="rtreg" placeholder="Ex.: CRF-SC 00000"></div>
-     </div>
+    <div class="sec" style="border:0;border-bottom:1px solid #000;text-align:center">3 - RESPONSÁVEL TÉCNICO</div>
+    <div class="rtbox">
+     <div class="rtf w"><label for="rt">NOME COMPLETO</label><textarea class="f" id="rt" rows="1" placeholder="Nome completo"></textarea></div>
+     <div class="rtf"><label for="rtreg">CONSELHO / Nº</label><input class="f" id="rtreg" placeholder="Ex.: CRF-SC 00000"></div>
     </div>
+    <div class="loc"><div class="c">LOCAL E DATA:<input class="f" id="local"></div></div>
     <div class="sig-box">
      <div class="sig"></div>
      <div class="cap">ASSINATURA DO RESPONSÁVEL TÉCNICO</div>
@@ -205,7 +218,7 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
   </div>
  </div>
  </div>
- <div class="versao">Versão 1.09</div>
+ <div class="versao">Versão 1.14</div>
 </div>
 
 <script>
@@ -266,13 +279,26 @@ function validade(){
 
 /* localStorage - salvamento automático neste computador */
 const CAMPOS=['cnpj','razao','fantasia','end','local','rt','rtreg'];
+let labs=[]; // laboratórios já digitados, usados como sugestão
+const lembraLab=v=>{v=v.replace(/\s+/g,' ').trim();if(v.length>1&&!labs.some(x=>x.toLowerCase()===v.toLowerCase()))labs=[...labs,v].slice(-60)};
+function marcaSalvo(quando){
+  const d=new Date(quando),h=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const dia=d.toDateString()===new Date().toDateString()?'':d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' ';
+  $('salvo').textContent=`Salvo ✓ ${dia}às ${h}`;$('salvo').className='';
+}
 const saveSession=()=>{
   const o={
+    quando:Date.now(),labs,
     campos:Object.fromEntries(CAMPOS.filter(i=>i!=='local'||$(i).value!==dataExt()).map(i=>[i,$(i).value])),
     auto,autoCnpj,
     itens:rows().map(tr=>{const g=c=>tr.querySelector(c).value;return{q:g('.q'),n:g('.nm'),l:g('.lb'),f:g('.fo'),t:g('.lt'),v:g('.vl'),m:g('.mt'),o:g('.mo')}})
   };
-  try{localStorage.setItem('baixa_med_session',JSON.stringify(o))}catch(e){}
+  try{
+    const txt=JSON.stringify(o);
+    localStorage.setItem('baixa_med_session',txt);
+    if(localStorage.getItem('baixa_med_session')!==txt)throw new Error('não conferiu');
+    marcaSalvo(o.quando);
+  }catch(e){$('salvo').textContent='⚠ Não salvou! Gere o PDF antes de fechar.';$('salvo').className='erro'}
 };
 const loadSession=()=>{
   try{
@@ -280,10 +306,12 @@ const loadSession=()=>{
     if(!raw)return false;
     const o=JSON.parse(raw);
     CAMPOS.forEach(i=>$(i).value=(o.campos||{})[i]??(i==='local'?dataExt():''));
+    labs=o.labs||[];(o.itens||[]).forEach(i=>lembraLab(i.l||''));
     $('tb').innerHTML='';
     if(o.itens&&o.itens.length){o.itens.forEach(addRow)}else{for(let i=0;i<5;i++)addRow()}
     auto=o.auto||{};autoCnpj=o.autoCnpj||'';
     syncAll();
+    if(o.quando)marcaSalvo(o.quando);
     return true;
   }catch(e){return false}
 };
@@ -361,6 +389,8 @@ document.addEventListener('change',e=>{
 document.addEventListener('click',e=>{
   if(e.target.classList.contains('rm')){
     const tr=e.target.closest('tr');
+    const cheia=[...tr.querySelectorAll('.f')].some(c=>c.classList.contains('mt')?c.value!==MOT[0]:c.value.trim()!=='');
+    if(cheia&&!confirm(`Remover o item ${tr.querySelector('.n').textContent}${tr.querySelector('.nm').value.trim()?' ('+tr.querySelector('.nm').value.trim()+')':''}?`))return;
     if(rows().length>1)tr.remove();else{tr.remove();addRow()}
     renum();validade();saveSession();
   }
@@ -399,11 +429,11 @@ $('bPdf').onclick=()=>{
 
 $('bLimpa').onclick=()=>{
   if(!confirm('Limpar todos os dados?'))return;
-  pedido++;auto={};autoCnpj='';
+  pedido++;auto={};autoCnpj='';labs=[];fechaSug();
   try{localStorage.removeItem('baixa_med_session')}catch(e){}
   CAMPOS.forEach(i=>$(i).value='');$('local').value=dataExt();
   $('tb').innerHTML='';for(let i=0;i<5;i++)addRow();
-  syncAll();validade();st('');
+  syncAll();validade();st('');$('salvo').textContent='';
 };
 
 /* nova relação: limpa os medicamentos e mantém a drogaria e o responsável */
@@ -412,6 +442,56 @@ $('bNova').onclick=()=>{
   $('tb').innerHTML='';for(let i=0;i<5;i++)addRow();
   $('local').value=dataExt();syncAll();validade();saveSession();
 };
+
+/* laboratórios já digitados aparecem como sugestão */
+let sugAlvo=null;
+function fechaSug(){const b=$('sug');if(b)b.remove();sugAlvo=null}
+function usaSug(v){
+  const t=sugAlvo;if(!t)return;
+  t.value=v;autosize(t);sync(t);fechaSug();saveSession();
+}
+function mostraSug(t){
+  fechaSug();
+  const q=t.value.trim().toLowerCase();
+  const outros=rows().map(tr=>tr.querySelector('.lb')).filter(c=>c!==t).map(c=>c.value.replace(/\s+/g,' ').trim()).filter(v=>v.length>1);
+  const vistos=new Set(),lista=[...outros,...labs].filter(v=>{const k=v.toLowerCase();if(vistos.has(k)||k===q||!k.startsWith(q))return false;vistos.add(k);return true}).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  if(!lista.length)return;
+  const b=document.createElement('div');b.id='sug';
+  lista.forEach(v=>{const d=document.createElement('div');d.textContent=v;d.onpointerdown=e=>e.preventDefault();d.onclick=()=>usaSug(v);b.appendChild(d)});
+  const m=t.getBoundingClientRect();
+  b.style.left=m.left+scrollX+'px';b.style.top=m.bottom+scrollY+'px';b.style.minWidth=m.width+'px';
+  document.body.appendChild(b);sugAlvo=t;
+}
+['focusin','input'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.classList.contains('lb'))mostraSug(e.target)}));
+document.addEventListener('focusout',e=>{
+  if(!e.target.classList.contains('lb'))return;
+  fechaSug();
+  if(e.target.isConnected&&e.target.value.trim()){lembraLab(e.target.value);saveSession()}
+});
+addEventListener('resize',fechaSug);
+
+/* Enter pula para o campo seguinte; no fim da última linha cria outra (Shift+Enter quebra linha) */
+document.addEventListener('keydown',e=>{
+  const t=e.target;
+  if(!t.matches('input,textarea,select')||e.isComposing)return;
+  if(sugAlvo===t){
+    const ops=[...$('sug').children];let i=ops.findIndex(d=>d.classList.contains('sel'));
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      e.preventDefault();if(i>=0)ops[i].classList.remove('sel');
+      i=e.key==='ArrowDown'?(i+1)%ops.length:(i<=0?ops.length:i)-1;
+      ops[i].classList.add('sel');ops[i].scrollIntoView({block:'nearest'});return;
+    }
+    if(e.key==='Escape'){fechaSug();return}
+    if(e.key==='Enter'&&i>=0&&!e.shiftKey)usaSug(ops[i].textContent);
+  }
+  if(e.key!=='Enter'||e.shiftKey||e.ctrlKey||e.altKey||e.metaKey)return;
+  e.preventDefault();
+  const tr=t.closest('#tb tr');
+  const campos=[...document.querySelectorAll('input,textarea,select')].filter(c=>c.offsetParent!==null);
+  const prox=campos[campos.indexOf(t)+1];
+  if(tr&&tr===rows().at(-1)&&(!prox||prox.closest('tr')!==tr)){addRow().querySelector('.q').focus();saveSession();return}
+  if(prox)prox.focus();
+});
 
 /* Inicialização: tenta carregar sessão salva ou inicia novo formulário */
 if(!loadSession()){
