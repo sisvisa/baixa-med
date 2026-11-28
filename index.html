@@ -15,6 +15,7 @@ body{margin:0;background:#e5e7eb;font-family:Calibri,Carlito,Arial,sans-serif;co
 #st{font:12px/1.25 Arial,sans-serif;color:#444;min-width:0}
 #st.ok{color:#1b5e20}#st.alerta{color:#a85400}#st.erro{color:#a33a3a}
 .f.inval{background:#fde2e2;color:#a33a3a}
+#avBO{margin-top:6px;padding:6px 10px;font:700 12px Arial,sans-serif;color:#664d03;background:#fff3cd;border:1px solid #e6c75a;border-radius:6px}#avBO:empty{display:none}
 #avVal{margin-top:6px;font:12px Arial,sans-serif;color:#a33a3a}
 .rep,.rep2{display:none}
 .fim{break-inside:avoid}
@@ -85,10 +86,14 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
  .foot{flex-direction:column;gap:6mm}
  .rtbox{flex-direction:column}
 }
+@media screen and (min-width:801px){select.f{font-size:9.5pt}}
+.fo::-webkit-calendar-picker-indicator{display:none!important}
+@media screen and (min-width:801px){.f.fo,.f.lt{font-size:10pt}}
+@media print{.fo+.pv,.lt+.pv{font-size:10pt}.mt+.pv{white-space:nowrap}}
 @media print{
  @page{size:A4 landscape;margin:0}
  body{background:#fff}
- .bar,.note,.x,.add,.busca,.versao,#avVal{display:none!important}
+ .bar,.note,.x,.add,.busca,.versao,#avVal,#avBO{display:none!important}
  .r .cnpjc{flex:1 1 0;border-right:0}
  .f.inval+.pv{color:#000}
  body.varias tr.rep{display:table-row}
@@ -101,14 +106,34 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
  .pv{display:block;white-space:pre-wrap;overflow-wrap:anywhere}
  .c{white-space:normal}.c .pv{flex:1 1 0;min-width:0}
 }
+/* impressão compacta: cabem mais medicamentos por folha */
+@media print{
+ .r{min-height:4.8mm}.t .c{font-size:10pt}.sec{font-size:10.5pt;padding:1px 4px}
+ .intro-text{font-size:9.5pt;line-height:1.25;margin:3px 0 4px}
+ th{font-size:8pt;height:auto;padding:1px 2px;line-height:1.15}
+ td{height:5mm;padding:0 3px;font-size:9pt}
+ td .pv,td .fo+.pv,td .lt+.pv{font-size:9pt;line-height:1.15}
+ .foot{margin-top:2.5mm}.sg{padding:4px 8px}.sg .c{min-height:4.8mm;margin-bottom:0;font-size:10pt}.sg .c+.c{margin-top:0!important}
+ .sig-box{margin-top:1mm}.sig{height:10mm}.cap{font-size:9pt;margin-bottom:0}
+ .vs .l{margin-top:1.5mm;font-size:10pt}.vs .sec+.l{margin-top:2.5mm}.vs>div:last-child{margin-bottom:1mm!important}
+}
+/* tabela compacta na tela do computador (no celular os campos seguem grandes) */
+@media screen and (min-width:801px){
+ th{font-size:9pt;height:auto;padding:2px;line-height:1.15}
+ td{font-size:10pt;height:6.2mm;padding:0 4px}
+ td .f,td .f.fo,td .f.lt{font-size:10pt;line-height:1.2}
+ td select.f{font-size:9pt}
+ td.x{padding:1px}.rm{width:19px;height:19px;font-size:11px}
+}
 </style>
 </head>
 <body>
 <div class="bar">
  <button class="p" id="bPdf" type="button">Salvar / Gerar PDF</button>
+ <button id="bNova" type="button">Nova relação</button>
  <button id="bLimpa" type="button">Limpar tudo</button>
 </div>
-<div class="note"><b>🔒 Seus dados não ficam salvos:</b> ao fechar a aba ou o navegador, são apagados. Só o CNPJ é consultado em base pública. Ao final, clique em “Salvar / Gerar PDF” e escolha “Salvar como PDF”. <b>Após assinar o documento, envie-o para o e-mail visa@cocaldosul.sc.gov.br</b></div>
+<div class="note"><b>💾 O preenchimento é salvo automaticamente neste computador</b> (neste navegador) e continua aqui mesmo depois de fechar. Para uma nova lista de medicamentos, clique em “Nova relação”; para apagar tudo, em “Limpar tudo”. Só o CNPJ é consultado em base pública. Ao final, clique em “Salvar / Gerar PDF” e escolha “Salvar como PDF”. <b>Após assinar o documento, envie-o para o e-mail visa@cocaldosul.sc.gov.br</b></div>
 <div class="note" id="inapp" style="display:none;background:#fff3cd;border-color:#e6c75a;color:#664d03"><b>⚠️ Abra esta página no navegador.</b> Você está dentro de outro aplicativo (como o WhatsApp), que bloqueia PDF e download. No iPhone, escolha <b>“Abrir no Safari”</b>; no Android, <b>“Abrir no Chrome”</b>. <button type="button" id="bCopia" style="margin-top:6px;padding:8px 12px;border:1px solid #888;border-radius:6px;background:#fff;font:inherit;cursor:pointer">Copiar link</button></div>
 
 <div class="page">
@@ -140,15 +165,17 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
 
  <div class="sec" style="margin-top:6px">2 - RELAÇÃO DE MEDICAMENTOS</div>
  <table>
-  <colgroup><col style="width:3.5%"><col style="width:8%"><col style="width:28%"><col style="width:14%"><col style="width:15%"><col style="width:10%"><col style="width:8%"><col style="width:13.5%"></colgroup>
+  <colgroup><col style="width:3.5%"><col style="width:5.5%"><col style="width:36.5%"><col style="width:12%"><col style="width:11%"><col style="width:10%"><col style="width:8%"><col style="width:13.5%"></colgroup>
   <thead><tr class="rep"><th colspan="8" id="rep"></th></tr><tr>
-   <th style="width:3.5%">Nº</th><th style="width:8%">QUANTIDADE</th><th style="width:28%">NOME COMERCIAL OU PRINCÍPIO ATIVO (SE GENÉRICO)</th><th style="width:14%">LABORATÓRIO</th><th style="width:15%">FORMA FARMACÊUTICA</th><th style="width:10%">LOTE</th><th style="width:8%">VALIDADE</th><th style="width:13.5%">MOTIVO</th><th class="x"></th>
+   <th style="width:3.5%">Nº</th><th style="width:5.5%">QTD.</th><th style="width:36.5%">NOME COMERCIAL OU PRINCÍPIO ATIVO (SE GENÉRICO)</th><th style="width:12%">LABORATÓRIO</th><th style="width:11%">FORMA FARMACÊUTICA</th><th style="width:10%">LOTE</th><th style="width:8%">VALIDADE</th><th style="width:13.5%">MOTIVO</th><th class="x"></th>
   </tr></thead>
   <tbody id="tb"></tbody>
  </table>
  <button class="add" id="bAdd" type="button">+ Adicionar medicamento</button>
 
  <div id="avVal"></div>
+ <div id="avBO" role="status"></div>
+ <datalist id="formas"><option value="Cp" label="Comprimido"><option value="Cp revestido" label="Comprimido revestido"><option value="Cp lib. prol." label="Comprimido de liberação prolongada"><option value="Cápsula"><option value="Drágea"><option value="Solução oral"><option value="Gotas"><option value="Suspensão oral"><option value="Xarope"><option value="Solução injetável"><option value="Pó sol. inj." label="Pó para solução injetável"><option value="Ades. transd." label="Adesivo transdérmico"><option value="Creme"><option value="Pomada"><option value="Supositório"><option value="Spray nasal"></datalist>
 
  <div class="fim">
  <div class="rep2" id="rep2"></div>
@@ -178,7 +205,7 @@ th.x{background:#e2efd9;border:1px solid #000;-webkit-print-color-adjust:exact;p
   </div>
  </div>
  </div>
- <div class="versao">Versão 1.03</div>
+ <div class="versao">Versão 1.09</div>
 </div>
 
 <script>
@@ -208,41 +235,51 @@ function addRow(d={}){
   <td data-label="Quantidade"><input class="f q" placeholder="01 cx"></td>
   <td data-label="Nome comercial ou princípio ativo (se genérico)"><textarea class="f nm" rows="1" placeholder="Ex.: Citta 20mg c/ 30cp."></textarea></td>
   <td data-label="Laboratório"><textarea class="f lb" rows="1"></textarea></td>
-  <td data-label="Forma farmacêutica"><textarea class="f fo" rows="1"></textarea></td>
-  <td data-label="Lote"><input class="f lt"></td>
+  <td data-label="Forma farmacêutica"><input class="f fo" list="formas"></td>
+  <td data-label="Lote"><textarea class="f lt" rows="1"></textarea></td>
   <td data-label="Validade"><input class="f vl" placeholder="MM/AAAA" inputmode="numeric" maxlength="7"></td>
   <td data-label="Motivo"><select class="f mt">${MOT.map(m=>`<option>${m}</option>`).join('')}</select><input class="f mo" placeholder="Qual motivo?" style="display:none"></td>
   <td class="x"><button type="button" class="rm" title="Remover">✕</button></td>`;
   $('tb').appendChild(tr);
   const set=(c,v)=>{if(v!=null)tr.querySelector(c).value=v};
-  set('.q',d.q);set('.nm',d.n);set('.lb',d.l);set('.fo',d.f);set('.lt',d.t);set('.vl',d.v);set('.mt',d.m==='Avaria'?'Avaria/Quebra':d.m);set('.mo',d.o);
+  set('.q',d.q);set('.nm',d.n);set('.lb',d.l);set('.fo',d.f);set('.lt',d.t==null?d.t:quebra(d.t));set('.vl',d.v);set('.mt',d.m==='Avaria'?'Avaria/Quebra':d.m);set('.mo',d.o);
   motToggle(tr);tr.querySelectorAll('textarea').forEach(autosize);tr.querySelectorAll('.f').forEach(sync);
   renum();validade();return tr;
+}
+
+/* lote: passa para a linha de baixo a cada 12 caracteres */
+const quebra=v=>(v.replace(/\n/g,'').match(/.{1,12}/g)||[]).join('\n');
+function loteFmt(t){
+  const novo=quebra(t.value);if(novo===t.value)return;
+  const pos=t.value.slice(0,t.selectionStart).replace(/\n/g,'').length;
+  t.value=novo;const p=pos+(pos?Math.floor((pos-1)/12):0);t.setSelectionRange(p,p);
 }
 
 /* validade: avisa quando o mês não existe */
 function validade(){
   const ruins=[];
   rows().forEach((tr,i)=>{const c=tr.querySelector('.vl'),m=c.value.slice(0,2),ruim=m.length===2&&(+m<1||+m>12);c.classList.toggle('inval',ruim);if(ruim)ruins.push(i+1)});
+  const ext=rows().map((tr,i)=>tr.querySelector('.mt').value==='Extravio'?i+1:0).filter(Boolean);
+  $('avBO').textContent=ext.length?`⚠️ Extravio no(s) item(ns) ${ext.join(', ')}: anexe o Boletim de Ocorrência Policial.`:'';
   $('avVal').textContent=ruins.length?`Atenção: mês inválido na validade do(s) item(ns) ${ruins.join(', ')}. Use MM/AAAA.`:'';
 }
 
-/* sessionStorage - persistência temporária contra F5 */
+/* localStorage - salvamento automático neste computador */
 const CAMPOS=['cnpj','razao','fantasia','end','local','rt','rtreg'];
 const saveSession=()=>{
   const o={
-    campos:Object.fromEntries(CAMPOS.map(i=>[i,$(i).value])),
+    campos:Object.fromEntries(CAMPOS.filter(i=>i!=='local'||$(i).value!==dataExt()).map(i=>[i,$(i).value])),
     auto,autoCnpj,
     itens:rows().map(tr=>{const g=c=>tr.querySelector(c).value;return{q:g('.q'),n:g('.nm'),l:g('.lb'),f:g('.fo'),t:g('.lt'),v:g('.vl'),m:g('.mt'),o:g('.mo')}})
   };
-  try{sessionStorage.setItem('baixa_med_session',JSON.stringify(o))}catch(e){}
+  try{localStorage.setItem('baixa_med_session',JSON.stringify(o))}catch(e){}
 };
 const loadSession=()=>{
   try{
-    const raw=sessionStorage.getItem('baixa_med_session');
+    const raw=localStorage.getItem('baixa_med_session');
     if(!raw)return false;
     const o=JSON.parse(raw);
-    CAMPOS.forEach(i=>$(i).value=(o.campos||{})[i]||'');
+    CAMPOS.forEach(i=>$(i).value=(o.campos||{})[i]??(i==='local'?dataExt():''));
     $('tb').innerHTML='';
     if(o.itens&&o.itens.length){o.itens.forEach(addRow)}else{for(let i=0;i<5;i++)addRow()}
     auto=o.auto||{};autoCnpj=o.autoCnpj||'';
@@ -308,6 +345,7 @@ $('bBusca').onclick=()=>{
 /* eventos */
 document.addEventListener('input',e=>{
   const t=e.target;
+  if(t.classList.contains('lt'))loteFmt(t);
   if(t.matches('textarea.f'))autosize(t);
   if(t.classList.contains('vl')){const d=t.value.replace(/\D/g,'').slice(0,6);t.value=d.length>2?d.slice(0,2)+'/'+d.slice(2):d}
   if(t.id==='cnpj'){t.value=maskCnpj(t.value);const d=t.value.replace(/\D/g,'');if(d.length===14)busca(d);else{pedido++;st('')}}
@@ -317,7 +355,7 @@ document.addEventListener('input',e=>{
   saveSession();
 });
 document.addEventListener('change',e=>{
-  if(e.target.classList.contains('mt')){const tr=e.target.closest('tr');motToggle(tr);tr.querySelectorAll('.f').forEach(sync)}
+  if(e.target.classList.contains('mt')){const tr=e.target.closest('tr');motToggle(tr);tr.querySelectorAll('.f').forEach(sync);validade()}
   saveSession();
 });
 document.addEventListener('click',e=>{
@@ -362,10 +400,17 @@ $('bPdf').onclick=()=>{
 $('bLimpa').onclick=()=>{
   if(!confirm('Limpar todos os dados?'))return;
   pedido++;auto={};autoCnpj='';
-  try{sessionStorage.removeItem('baixa_med_session')}catch(e){}
+  try{localStorage.removeItem('baixa_med_session')}catch(e){}
   CAMPOS.forEach(i=>$(i).value='');$('local').value=dataExt();
   $('tb').innerHTML='';for(let i=0;i<5;i++)addRow();
   syncAll();validade();st('');
+};
+
+/* nova relação: limpa os medicamentos e mantém a drogaria e o responsável */
+$('bNova').onclick=()=>{
+  if(!confirm('Apagar a lista de medicamentos e começar uma nova? Os dados do estabelecimento e do responsável técnico serão mantidos.'))return;
+  $('tb').innerHTML='';for(let i=0;i<5;i++)addRow();
+  $('local').value=dataExt();syncAll();validade();saveSession();
 };
 
 /* Inicialização: tenta carregar sessão salva ou inicia novo formulário */
